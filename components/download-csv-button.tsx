@@ -1,0 +1,39 @@
+"use client";
+
+export function DownloadCsvButton({
+  filename,
+  rows
+}: {
+  filename: string;
+  rows: Array<Record<string, string | number | boolean | null | undefined>>;
+}) {
+  const handleDownload = () => {
+    const headers = Object.keys(rows[0] ?? {});
+    const lines = [
+      headers.join(","),
+      ...rows.map((row) =>
+        headers
+          .map((header) => {
+            const raw = row[header];
+            const value = raw == null ? "" : String(raw);
+            return `"${value.replaceAll('"', '""')}"`
+          })
+          .join(",")
+      )
+    ];
+
+    const blob = new Blob([lines.join("\n")], { type: "text/csv;charset=utf-8;" });
+    const url = URL.createObjectURL(blob);
+    const link = document.createElement("a");
+    link.href = url;
+    link.download = filename;
+    link.click();
+    URL.revokeObjectURL(url);
+  };
+
+  return (
+    <button type="button" className="button-secondary" onClick={handleDownload}>
+      Export CSV
+    </button>
+  );
+}
